@@ -187,6 +187,7 @@ class RadTTSModule(NeuralModule, Exportable):
         self.dummy_speaker_embedding = dummy_speaker_embedding
         self.learn_alignments = learn_alignments
         self.use_speaker_emb_for_alignment = use_speaker_emb_for_alignment
+        self.attn_straight_through_estimator = attn_straight_through_estimator
         self.affine_activation = affine_activation
         self.include_modules = include_modules
         self.attn_use_CTC = bool(attn_use_CTC)
