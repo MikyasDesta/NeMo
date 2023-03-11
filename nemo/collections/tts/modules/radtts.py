@@ -159,8 +159,8 @@ class RadTTSModule(NeuralModule, Exportable):
         learn_alignments=False,
         affine_activation='softplus',
         attn_use_CTC=True,
-        use_speaker_emb_for_alignment = False
-        attn_straight_through_estimator = False
+        use_speaker_emb_for_alignment = False,
+        attn_straight_through_estimator = False,
         use_context_lstm=False,
         context_lstm_norm=None,
         text_encoder_lstm_norm=None,
