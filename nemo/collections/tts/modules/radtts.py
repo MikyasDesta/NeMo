@@ -201,9 +201,9 @@ class RadTTSModule(NeuralModule, Exportable):
         if 'atn' in include_modules or 'dec' in include_modules:
             if self.learn_alignments:
                 if self.use_speaker_emb_for_alignment:
-                    self.attention = ConvAttention(n_mel_channels, self.n_speaker_dim + n_text_dim)
+                    self.attention = ConvAttention(n_mel_channels, self.n_speaker_dim, self.n_speaker_dim + n_text_dim)
                 else:
-                    self.attention = ConvAttention(n_mel_channels,  n_text_dim)
+                    self.attention = ConvAttention(n_mel_channels,  self.n_speaker_dim, n_text_dim)
 
             self.n_flows = n_flows
             self.n_group_size = n_group_size
@@ -466,7 +466,7 @@ class RadTTSModule(NeuralModule, Exportable):
                 text_embeddings_for_attn = torch.cat((text_embeddings_for_attn, speaker_vecs_expd.detach()), 1) 
 
             attn_soft, attn_logprob = self.attention(
-                mel, text_embeddings, out_lens, attn_mask, key_lens=in_lens, attn_prior=attn_prior
+                mel, text_embeddings_for_attn, out_lens, attn_mask, key_lens=in_lens, attn_prior=attn_prior
             )
 
             if binarize_attention:
