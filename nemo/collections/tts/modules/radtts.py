@@ -159,6 +159,8 @@ class RadTTSModule(NeuralModule, Exportable):
         learn_alignments=False,
         affine_activation='softplus',
         attn_use_CTC=True,
+        use_speaker_emb_for_alignment = False
+        attn_straight_through_estimator = False
         use_context_lstm=False,
         context_lstm_norm=None,
         text_encoder_lstm_norm=None,
@@ -184,6 +186,7 @@ class RadTTSModule(NeuralModule, Exportable):
         self.encoder = get_radtts_encoder(encoder_embedding_dim=n_text_dim)
         self.dummy_speaker_embedding = dummy_speaker_embedding
         self.learn_alignments = learn_alignments
+        self.use_speaker_emb_for_alignment = use_speaker_emb_for_alignment
         self.affine_activation = affine_activation
         self.include_modules = include_modules
         self.attn_use_CTC = bool(attn_use_CTC)
@@ -197,7 +200,10 @@ class RadTTSModule(NeuralModule, Exportable):
 
         if 'atn' in include_modules or 'dec' in include_modules:
             if self.learn_alignments:
-                self.attention = ConvAttention(n_mel_channels, self.n_speaker_dim, n_text_dim)
+                if self.use_speaker_emb_for_alignment:
+                    self.attention = ConvAttention(n_mel_channels, self.n_speaker_dim + n_text_dim)
+                else:
+                    self.attention = ConvAttention(n_mel_channels,  n_text_dim)
 
             self.n_flows = n_flows
             self.n_group_size = n_group_size
@@ -451,8 +457,14 @@ class RadTTSModule(NeuralModule, Exportable):
         attn_logprob = None
         if 'atn' in self.include_modules or 'dec' in self.include_modules:
             # make sure to do the alignments before folding
-            attn_mask = ~get_mask_from_lengths(in_lens)[..., None]
+            attn_mask = ~get_mask_from_lengths(in_lens)[..., None] == 0
             # attn_mask shld be 1 for unsd t-steps in text_enc_w_spkvec tensor
+            
+            text_embeddings_for_attn = text_embeddings
+            if self.use_speaker_emb_for_alignment:
+                speaker_vecs_expd = speaker_vecs[:, :, None].expand(-1, -1, text_embeddings.shape[2])
+                text_embeddings_for_attn = torch.cat((text_embeddings_for_attn, speaker_vecs_expd.detach()), 1) 
+
             attn_soft, attn_logprob = self.attention(
                 mel, text_embeddings, out_lens, attn_mask, key_lens=in_lens, attn_prior=attn_prior
             )
@@ -460,6 +472,8 @@ class RadTTSModule(NeuralModule, Exportable):
             if binarize_attention:
                 attn = self.binarize_attention(attn_soft, in_lens, out_lens)
                 attn_hard = attn
+                if self.attn_straight_through_estimator:
+                    attn_hard = attn_soft + (attn_hard - attn_soft).detach()
             else:
                 attn = attn_soft
 

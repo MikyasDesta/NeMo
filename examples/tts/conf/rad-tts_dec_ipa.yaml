@@ -214,6 +214,8 @@ model:
         scaling_fn: tanh
         matrix_decomposition: LUS
         learn_alignments: true
+        use_speaker_emb_for_alignment: true
+        attn_straight_through_estimator: true
         use_context_lstm: true
         context_lstm_norm: spectral
         context_lstm_w_f0_and_energy: true
