@@ -114,8 +114,11 @@ class AttentionBinarizationLoss(torch.nn.Module):
         super(AttentionBinarizationLoss, self).__init__()
 
     def forward(self, hard_attention, soft_attention):
-        log_sum = torch.log(soft_attention[hard_attention == 1]).sum()
-        return -log_sum / hard_attention.sum()
+        loss = F.binary_cross_entropy(
+                soft_attention[hard_attention == 1],
+                torch.ones_like(soft_attention[hard_attention == 1]),
+                reduction='mean')
+        return loss
 
 
 class RADTTSLoss(Loss):
