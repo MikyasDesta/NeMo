@@ -458,7 +458,7 @@ class RadTTSModule(NeuralModule, Exportable):
         attn_logprob = None
         if 'atn' in self.include_modules or 'dec' in self.include_modules:
             # make sure to do the alignments before folding
-            attn_mask = ~get_mask_from_lengths(in_lens)[..., None] == 0
+            attn_mask = ~get_mask_from_lengths(in_lens)[..., None] 
             # attn_mask shld be 1 for unsd t-steps in text_enc_w_spkvec tensor
             
             text_embeddings_for_attn = text_embeddings
