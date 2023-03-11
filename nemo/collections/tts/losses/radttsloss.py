@@ -99,6 +99,8 @@ class AttributePredictionLoss(torch.nn.Module):
                 "loss_prior_{}".format(self.name): (loss_prior, 0.0),
             }
         elif 'x_hat' in model_output:
+            if 'mask' in model_output:
+                mask = model_output['mask']
             loss_dict = compute_regression_loss(model_output['x_hat'], model_output['x'], mask, self.name)
             for k, v in loss_dict.items():
                 loss_dict[k] = (v, self.loss_weight)

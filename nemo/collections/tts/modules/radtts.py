@@ -576,7 +576,7 @@ class RadTTSModule(NeuralModule, Exportable):
             f0_model_outputs = self.f0_pred_module(
                 text_enc_time_expanded, torch.detach(speaker_vecs), f0_voiced, out_lens
             )
-
+            f0_model_outputs["mask"] = voiced_mask
             energy_model_outputs = self.energy_pred_module(
                 text_enc_time_expanded, torch.detach(speaker_vecs), energy_avg, out_lens
             )
